@@ -92,6 +92,7 @@ package
         //property
         private var _restaurantId        :String;
         private var _restaurantName      :String;
+        private var _restaurantAddr      :String;
         private var _hitId               :String;
         private var _assignmentId        :String;
         private var _workerId            :String;
@@ -113,11 +114,6 @@ package
         private var _timer              :Timer;
         private var _sgTimer            :NativeSignal;
         
-        private function progressHandler( itemName:String, percentLoaded:String ):void
-        {
-
-        }
-        
         
 		//---------------------------------------------------------------------
 		//  Override following functions for using the core framework of Robotbody:
@@ -133,8 +129,7 @@ package
 		
 		override public function init():void
 		{
-            _resManager.dir_asset = '/media/swf/asset/';
-            _resManager.progressHandler = progressHandler;
+            resManager.dir_asset = '/media/swf/asset/';
             
             if( DEBUG ){
                 _server_url = LOCAL_URL;
@@ -166,7 +161,7 @@ package
             
 //            _imageLoader.addEventListener(BulkLoader.PROGRESS, onAllItemsProgress);
             
-            var stageWidth:int = _sceneManager.stage.stageWidth;
+            var stageWidth:int = sceneManager.stage.stageWidth;
             
             _photoDisplayPanel = new Sprite();
             _photoDisplayPanel.x = 50;
@@ -289,7 +284,7 @@ package
 			 ***************************************/
 			accessXML();
             
-            var flashVar = Toolkits.getFlashVars( _sceneManager.root )
+            var flashVar = Toolkits.getFlashVars( sceneManager.root )
             
             if(flashVar && flashVar['auditor_mode'] == "True"){
                 
@@ -328,7 +323,7 @@ package
                     }else{
                         removeFromContextView( _preloader_mc );
                         
-                        var stageWidth:int = _sceneManager.stage.stageWidth;
+                        var stageWidth:int = sceneManager.stage.stageWidth;
                         
                         var error_txt:TextField = new TextField();
                         error_txt.defaultTextFormat = new TextFormat('Arial', 64, 0xFF3366, true);
@@ -374,11 +369,12 @@ package
             _workerId = queryObject.workerId;
             
             // get flash var
-            var flashVar:Object = Toolkits.getFlashVars( _sceneManager.root);
+            var flashVar:Object = Toolkits.getFlashVars( sceneManager.root);
             
             if( flashVar ){
                 _restaurantName = flashVar['restaurant_name'];
                 _restaurantId = flashVar['restaurant_id'];
+                _restaurantAddr = flashVar['restaurant_addr'];
             }
             
             if( _assignmentId == "ASSIGNMENT_ID_NOT_AVAILABLE" ){
@@ -390,7 +386,7 @@ package
         
         private function displayPreview():void
         {
-            var stageWidth:int = _sceneManager.stage.stageWidth;
+            var stageWidth:int = sceneManager.stage.stageWidth;
             var previewMask:Sprite = new Sprite();
             
             previewMask.graphics.beginFill( 0x111111, 0.3 );
@@ -591,7 +587,7 @@ package
             var numPhoto:int = thumbURLList.length;
             
             for(var i:int = 0; i < numPhoto; ++i){
-trace(i, thumbURLList[i]);
+//trace(i, thumbURLList[i]);
                 _imageLoader.add( thumbURLList[i], { id:i, type:BulkLoader.TYPE_IMAGE, maxTries:5 } );
                 _imageLoader.get( String( i )  ).addEventListener( BulkLoader.ERROR, onBulkLoaderError, false, 0, true );
                 _imageLoader.get( String( i )  ).addEventListener( BulkLoader.COMPLETE, onOneImageLoaded, false, 0, true );
@@ -605,7 +601,7 @@ trace(i, thumbURLList[i]);
             item.removeEventListener( BulkLoader.COMPLETE, onOneImageLoaded );
             
             var index:int = int( item.id );
-trace("image", index, "has been loaded");
+//trace("image", index, "has been loaded");
 
             var photoSprite:PhotoSprite = new PhotoSprite( item.content, _photoModelList[ index ], index)
             photoSprite.sgSelected.add( isDone );
@@ -643,7 +639,7 @@ trace("image", index, "has been loaded");
             for( var i:int = 0; i < numPhoto; ++i )
             {
                 thumbURLList[i] = photoList[i].urlThumb;
-trace(photoList[i].urlThumb);                
+//trace(photoList[i].urlThumb);                
                 _photoModelList[i] = new PhotoModel( photoList[i] );
             }
             
@@ -671,8 +667,8 @@ trace(photoList[i].urlThumb);
         {
             var photoList:Array = [];
             var cmd:AsyncCommand = new AsyncCommand(0,
-                new AgentCmd( _restaurantName, NUM_SEARCH_RESULT, photoList, _googleAgent),
-                new AgentCmd( _restaurantName, NUM_SEARCH_RESULT, photoList, _flickrAgent)
+                new AgentCmd( _restaurantName, NUM_SEARCH_RESULT, photoList, _googleAgent, _restaurantAddr),
+                new AgentCmd( _restaurantName, NUM_SEARCH_RESULT, photoList, _flickrAgent, _restaurantAddr)
             );
             
             cmd.sgCommandComplete.add( 
@@ -728,12 +724,12 @@ trace(photoList[i].urlThumb);
 		
 		override public function accessSWF():void
 		{
-            var preloader_swf:MovieClip = _resManager.get("Preloader.swf") as MovieClip;
+            var preloader_swf:MovieClip = resManager.get("Preloader.swf") as MovieClip;
             
             _preloader_mc = preloader_swf.getChildByName("preloader_mc") as MovieClip;
             addToContextView( _preloader_mc );
             
-            var stageWidth:int = _sceneManager.stage.stageWidth;
+            var stageWidth:int = sceneManager.stage.stageWidth;
             
             _preloader_mc.x = (stageWidth) >> 1;
             _preloader_mc.y = 100; 
@@ -757,7 +753,7 @@ trace(photoList[i].urlThumb);
 			
 			switch(event.keyCode){				
 				case Keyboard.F3: 
-					_sceneManager.switchPerformancePanel();
+					sceneManager.switchPerformancePanel();
 					break;
 			}
 			

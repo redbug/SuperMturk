@@ -27,11 +27,11 @@
       <libraryPathEntry kind="3" linkType="1" path="lib/as3-signals-v0.7.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="lib/button.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="lib/fl_package.swc" useDefaultLinkType="false"/>
-      <libraryPathEntry kind="3" linkType="1" path="/Users/redbug/Flash/3rd_Lib/flickr/bin/flickr.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="lib/googleAs3API.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="lib/radio_button.swc" useDefaultLinkType="false"/>
-      <libraryPathEntry kind="3" linkType="1" path="/Users/redbug/Flash/Lib/Robotbody/bin/Robotbody.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="lib/gifPlayer.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="lib/flickr.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="lib/Robotbody.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>

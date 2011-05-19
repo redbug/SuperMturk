@@ -100,6 +100,17 @@ package idv.redbug.mturk.photoFetcher.agent
                     return "Unknown agent";
             }
         }
+
+        public function isValidateForAscii( str:String ):Boolean
+        {
+            for( var i:int=0; i < str.length; ++i){
+                if( str.charCodeAt(i) > 255 ){
+                    return false;
+                }
+                //_sgError.dispatch( String(str.charCodeAt(i)) );
+            } 
+            return true;
+        }
         
         //connect to API
         public function connect():void
@@ -118,7 +129,7 @@ package idv.redbug.mturk.photoFetcher.agent
         }
         
         //Send searching query to API
-        public function search( keyword:String, numResult:int ):void
+        public function search( keyword:String, numResult:int, restaurantAddr:String=null ):void
         {
         
         }
@@ -131,7 +142,6 @@ package idv.redbug.mturk.photoFetcher.agent
         {
         
         }
-        
         
         //--------------- Signal ----------------------//
         

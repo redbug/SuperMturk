@@ -101,11 +101,22 @@ package idv.redbug.mturk.photoFetcher.agent.google
         
         }
         
-        override public function search( keyword:String, numResult:int ):void
+        override public function search( keyword:String, numResult:int, restaurantAddr:String=null ):void
         {
-            _keyword = keyword;
+            if ( isValidateForAscii( restaurantAddr ) ){
+                //for english
+                _keyword = 'intitle:' + keyword + '("restaurant" OR ' + '"' + restaurantAddr +'")';
+            }else{
+                //for non-english
+                _keyword = 'intitle:' + keyword + ' OR ' + '"' + restaurantAddr + '"';
+            }
+            
+//            _keyword = keyword;
             _numResult = numResult;
-            search_helper( keyword, 0 );          
+            
+//            _sgError.dispatch( "google: " + _keyword );
+            
+            search_helper( _keyword, 0 );          
         }
         
         private function search_helper( keyword:String, start:int ):void

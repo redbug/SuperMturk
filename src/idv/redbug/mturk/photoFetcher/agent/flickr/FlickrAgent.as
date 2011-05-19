@@ -145,13 +145,23 @@ package idv.redbug.mturk.photoFetcher.agent.flickr{
             _numRetried_connect++;
             connect();        
         }
-        
-        override public function search( keyword:String, numResult:int ):void
+
+        override public function search( keyword:String, numResult:int, restaurantAddr:String=null ):void
         {
-            _keyword = keyword;
+            if ( isValidateForAscii( restaurantAddr ) ){
+                //for english
+                _keyword = keyword + " restaurant";
+            }else{
+                //for non-english
+                _keyword = keyword;
+            }
+            
+//            _keyword = keyword;
             _numResult = numResult;
             
-            var keywordEncoded:String = encodeURI( keyword );
+//            _sgError.dispatch( "flickr: " + _keyword );
+            
+            var keywordEncoded:String = encodeURI( _keyword );
             _sgLog.dispatch( "keyword (URL encoded) : " + keywordEncoded ); 
             /*
              * The possible values of sorting parameter are:

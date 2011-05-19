@@ -15,16 +15,18 @@ package idv.redbug.mturk.photoFetcher.command
     {
         private var _agent              :ApiAgent;
         private var _keyword            :String;
+        private var _restaurantAddr     :String;
         private var _numSearchResult    :int;
         private var _resultRawData      :Array;
         
-        public function AgentCmd( keyword:String, numSearchResult:int, resultRawData:Array, agent:ApiAgent, delay:Number=0)
+        public function AgentCmd( keyword:String, numSearchResult:int, resultRawData:Array, agent:ApiAgent, restaurantAddr:String=null, delay:Number=0)
         {
             super(delay);
             this._agent = agent;
             this._keyword = keyword;
             this._numSearchResult = numSearchResult;
             this._resultRawData = resultRawData;
+            this._restaurantAddr = restaurantAddr;
         }
         
         override public function execute():void
@@ -38,7 +40,7 @@ package idv.redbug.mturk.photoFetcher.command
         {
             trace( _agent.getAgentName() + " connected!" );
             trace( "searching..." );
-            _agent.search( _keyword, _numSearchResult );
+            _agent.search( _keyword, _numSearchResult, _restaurantAddr );
         }
         
         private function onSearchComplete( photoList:Vector.<PhotoModel>, agentId:int ):void

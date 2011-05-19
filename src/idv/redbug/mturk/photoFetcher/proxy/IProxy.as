@@ -20,7 +20,7 @@ package idv.redbug.mturk.photoFetcher.proxy
         function onConnectError( event:Event=null ):void;
         
         //Send searching query to API
-        function search( keyword:String, numResult:int ):void;
+        function search( keyword:String, numResult:int, restaurantAddr:String=null ):void;
         function onSearchComplete( event:Event=null ):void;
         function onSearchError( event:Event=null ):void;
 	}
