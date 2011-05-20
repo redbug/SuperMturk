@@ -108,6 +108,7 @@ package
         
         private var _numPhotos          :int;
         private var _auditorMode        :Boolean;
+        private var _isPreview          :Boolean;
         
         private var _numRetried_submit  :int;
         
@@ -378,6 +379,7 @@ package
             }
             
             if( _assignmentId == "ASSIGNMENT_ID_NOT_AVAILABLE" ){
+                _isPreview = true;
                 displayPreview();                
             }
 
@@ -506,7 +508,9 @@ package
                 _numPhotos--;
                 
                 if( _numPhotos == 0 ){
-                    _submit_btn.enabled = true;
+                    if( !_isPreview ){
+                        _submit_btn.enabled = true;
+                    }
                 }
             }
         }
