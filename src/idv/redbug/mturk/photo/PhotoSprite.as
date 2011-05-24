@@ -22,24 +22,34 @@ package idv.redbug.mturk.photo
     import flash.text.TextFieldAutoSize;
     import flash.text.TextFormat;
     
+    import idv.redbug.robotbody.util.Toolkits;
+    
     import org.osflash.signals.Signal;
     
     public class PhotoSprite extends Sprite
     {
-        private const MAX_DESCRIPTION :uint = 150;
+        private const MAX_DESCRIPTION   :uint = 150;
+        private const QUESTION_YES      :uint = 1;
+        private const QUESTION_NO       :uint = 0;
         
-        private var _model          :PhotoModel;
-        private var _bitmap         :DisplayObject;
-        private var _title_txt      :TextField;
-        private var _tags_txt       :TextField;
-        private var _description_txt:TextField;
-        private var _reference_txt  :TextField;
         
-        private var _ct_restaurant_rb  :RadioButton;
-        private var _ct_dish_rb        :RadioButton; 
-        private var _ct_logo_rb        :RadioButton;
-        private var _ct_none_rb        :RadioButton;
-        private var _ct_rb_group       :RadioButtonGroup;
+        private var _model              :PhotoModel;
+        private var _bitmap             :DisplayObject;
+        private var _title_txt          :TextField;
+        private var _tags_txt           :TextField;
+        private var _description_txt    :TextField;
+        private var _reference_txt      :TextField;
+        private var _related_question   :TextField;
+        
+        private var _ct_restaurant_rb   :RadioButton;
+        private var _ct_dish_rb         :RadioButton; 
+        private var _ct_logo_rb         :RadioButton;
+        private var _ct_none_rb         :RadioButton;
+        private var _ct_rb_group        :RadioButtonGroup;
+        
+        private var _related_yes_rb     :RadioButton;
+        private var _related_no_rb      :RadioButton;
+        private var _related_rb_group   :RadioButtonGroup;
         
         private var _box                :Sprite; 
         private var _index              :int;
@@ -77,7 +87,6 @@ package idv.redbug.mturk.photo
             var width   :int = 150;
             var x       :int = 0;
             var y       :int = 0;
-            var space   :int = 20;
             
             var center:TextFormat = new TextFormat();
             center.align="center";
@@ -121,12 +130,34 @@ package idv.redbug.mturk.photo
             _reference_txt.width = width;
             _reference_txt.x = x;
             _reference_txt.y = _bitmap.y + _bitmap.height;
-            _reference_txt.autoSize = TextFieldAutoSize.CENTER
+            _reference_txt.autoSize = TextFieldAutoSize.CENTER;
             _reference_txt.wordWrap = true;
             reference_wraper.addChild(_reference_txt );
             
             
-            //-- radio buttons --//
+            _related_question = new TextField();
+            _related_question.defaultTextFormat = new TextFormat( null, 12, color, true );
+            _related_question.text = "Is this photo related to the designated restaurant?"
+            _related_question.width = width;
+            _related_question.autoSize = TextFieldAutoSize.LEFT;
+            _related_question.wordWrap = true;
+            
+            
+            //-- radio buttons - is related --//
+            _related_yes_rb    = new RadioButton();
+            _related_no_rb     = new RadioButton();
+            _related_rb_group  = new RadioButtonGroup("related_group");
+
+            _related_yes_rb.label = "Yes";
+            _related_yes_rb.value = QUESTION_YES;
+            
+            _related_no_rb.label = "No";
+            _related_no_rb.value = QUESTION_NO;
+            
+            _related_yes_rb.group = _related_no_rb.group = _related_rb_group;
+            
+            
+            //-- radio buttons - content type --//
             _ct_restaurant_rb = new RadioButton();
             _ct_dish_rb = new RadioButton();
             _ct_logo_rb = new RadioButton();
@@ -148,43 +179,17 @@ package idv.redbug.mturk.photo
             
             _ct_restaurant_rb.group = _ct_dish_rb.group = _ct_logo_rb.group = _ct_none_rb.group = _ct_rb_group;
 
+            
             y = _bitmap.y + _bitmap.height;
-            
-            _ct_restaurant_rb.move(x, y + space); 
-            _ct_dish_rb.move(x, _ct_restaurant_rb.y + space); 
-            _ct_logo_rb.move(x, _ct_dish_rb.y + space); 
-            _ct_none_rb.move(x, _ct_logo_rb.y + space);
-            
-            
-            var contentType:int = _model.contentType; 
-            
-            if( contentType != -1 )
-            {
-                switch( contentType ){
-                    case PhotoModel.CT_NONE:
-                        _ct_none_rb.selected = true;
-                        break;
-                    case PhotoModel.CT_RESTAURANT:
-                        _ct_restaurant_rb.selected = true;
-                        break;
-                    case PhotoModel.CT_DISH:
-                        _ct_dish_rb.selected = true;
-                        break;
-                    case PhotoModel.CT_LOGO:
-                        _ct_logo_rb.selected = true;
-                        break;
-                }
-            }
-            
+            var space   :int = 20;
             
             //-----  Box ------//
             _box = new Sprite();
             _box.x = x;
-            _box.y = _ct_restaurant_rb.y;
-            _box.graphics.beginFill(0xFFFFFF, 1.0); 
-            _box.graphics.drawRect(0, 0, width, space * 4); 
-            _box.graphics.endFill();   
+            _box.y = y + space;
             
+            
+            var contentType:int = _model.contentType; 
             
             //-- tags --//
             _tags_txt = new TextField();
@@ -195,10 +200,7 @@ package idv.redbug.mturk.photo
             tags = (tags == "")? "None.":tags;
                 
             _tags_txt.appendText( tags );
-            
             _tags_txt.width = width;
-            _tags_txt.x = x;
-            _tags_txt.y = _box.y + _box.height + space;
             _tags_txt.autoSize = TextFieldAutoSize.CENTER
             _tags_txt.wordWrap = true;
             
@@ -219,27 +221,101 @@ package idv.redbug.mturk.photo
             
             _description_txt.appendText( description );
             _description_txt.width = width;
-            _description_txt.x = x;
-            _description_txt.y = _tags_txt.y + _tags_txt.height + space;
             _description_txt.autoSize = TextFieldAutoSize.CENTER
             _description_txt.wordWrap = true;
+
             
+            //review mode
+            if( contentType != -1 )
+            {
+                switch( contentType ){
+                    case PhotoModel.CT_NONE:
+                        _ct_none_rb.selected = true;
+                        break;
+                    case PhotoModel.CT_RESTAURANT:
+                        _ct_restaurant_rb.selected = true;
+                        break;
+                    case PhotoModel.CT_DISH:
+                        _ct_dish_rb.selected = true;
+                        break;
+                    case PhotoModel.CT_LOGO:
+                        _ct_logo_rb.selected = true;
+                        break;
+                }
+                addCTRadioButtons();
+            }
+                //normal mode
+            else{
+                addQuestionRadioButtons();
+            }
             
             this.addChild( _title_txt );
             this.addChild( _bitmap );
             this.addChild( _box ); 
-            this.addChild( _ct_restaurant_rb ); 
-            this.addChild( _ct_dish_rb ); 
-            this.addChild( _ct_logo_rb );
-            this.addChild( _ct_none_rb );
             this.addChild( _tags_txt );
             this.addChild( _description_txt );
             this.addChild( reference_wraper );
+        }
+
+        private function onAnsweringQuestion( event:Event ):void
+        {
+            if( event.target.selection.value == QUESTION_NO )
+            {
+                _ct_none_rb.selected = true;
+                _model.contentType = PhotoModel.CT_NONE;
+                _sgSelected.dispatch( _index );
+            }else{
+                Toolkits.removeAllChildren( _box );
+                addCTRadioButtons();            
+            }
+        }
+        
+        private function addCTRadioButtons( ):void
+        {
+            var space   :int = 20;
+            
+            _ct_restaurant_rb.move(0, 0); 
+            _ct_dish_rb.move(0, _ct_restaurant_rb.y + space); 
+            _ct_logo_rb.move(0, _ct_dish_rb.y + space); 
+            _ct_none_rb.move(0, _ct_logo_rb.y + space);
+            
+            _box.addChild( _ct_restaurant_rb );
+            _box.addChild( _ct_dish_rb );
+            _box.addChild( _ct_logo_rb );
+            _box.addChild( _ct_none_rb );
+            
+            _tags_txt.x = _box.x;
+            _tags_txt.y = _box.y + (_box.height >> 1) + space;
+
+            _description_txt.x = _box.x;
+            _description_txt.y = _tags_txt.y + _tags_txt.height + space;
             
             _ct_rb_group.addEventListener( MouseEvent.CLICK, onClickRadioButton );
         }
-
-        private function onClickRadioButton(event:Event):void {
+        
+        private function addQuestionRadioButtons():void
+        {
+            var space   :int = 20;
+            _related_question.y = space;
+            _related_yes_rb.move( 0, _related_question.y + _related_question.height );
+            _related_no_rb.move(0, _related_yes_rb.y + space ); 
+            
+            _box.addChild( _related_question );
+            _box.addChild( _related_yes_rb );
+            _box.addChild( _related_no_rb );
+            
+            _tags_txt.x = _box.x;
+            _tags_txt.y = _box.y + (_box.height >> 1) + space * 2;
+            
+            _description_txt.x = _box.x;
+            _description_txt.y = _tags_txt.y + _tags_txt.height + space;
+            
+            _related_rb_group.addEventListener( MouseEvent.CLICK, onAnsweringQuestion );
+        }
+            
+        
+        private function onClickRadioButton(event:Event):void
+        {
             _model.contentType = event.target.selection.value;
             _sgSelected.dispatch( _index );
         }
