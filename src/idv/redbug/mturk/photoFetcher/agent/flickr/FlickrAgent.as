@@ -6,6 +6,7 @@
  *******************************************/
 
 package idv.redbug.mturk.photoFetcher.agent.flickr{
+	import com.adobe.utils.StringUtil;
 	import com.adobe.webapis.flickr.*;
 	import com.adobe.webapis.flickr.Photo;
 	import com.adobe.webapis.flickr.events.FlickrResultEvent;
@@ -150,13 +151,14 @@ package idv.redbug.mturk.photoFetcher.agent.flickr{
         {
             if ( isValidateForAscii( restaurantAddr ) ){
                 //for english
-                _keyword = keyword + " restaurant";
+                var myPattern	:RegExp = /#\d+/;
+                _keyword = StringUtil.trim(keyword.replace( myPattern, "") );
+                _keyword += " restaurant";
             }else{
                 //for non-english
                 _keyword = keyword;
             }
-            
-//            _keyword = keyword;
+
             _numResult = numResult;
             
 //            _sgError.dispatch( "flickr: " + _keyword );

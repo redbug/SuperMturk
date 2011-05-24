@@ -17,6 +17,8 @@ package idv.redbug.mturk.photoFetcher.agent.google
     import be.boulevart.google.events.GoogleAPIErrorEvent;
     import be.boulevart.google.events.GoogleApiEvent;
     
+    import com.adobe.utils.StringUtil;
+    
     import flash.events.Event;
     
     import idv.redbug.mturk.photo.PhotoModel;
@@ -105,13 +107,15 @@ package idv.redbug.mturk.photoFetcher.agent.google
         {
             if ( isValidateForAscii( restaurantAddr ) ){
                 //for english
-                _keyword = 'intitle:' + keyword + '("restaurant" OR ' + '"' + restaurantAddr +'")';
+                var myPattern	:RegExp = /#\d+/;
+                _keyword = StringUtil.trim(keyword.replace( myPattern, "") );
+                
+                _keyword = 'intitle:' + _keyword + '("restaurant" OR ' + '"' + restaurantAddr +'")';
             }else{
                 //for non-english
                 _keyword = 'intitle:' + keyword + ' OR ' + '"' + restaurantAddr + '"';
             }
             
-//            _keyword = keyword;
             _numResult = numResult;
             
 //            _sgError.dispatch( "google: " + _keyword );
