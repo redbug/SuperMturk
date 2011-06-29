@@ -22,6 +22,7 @@ package idv.redbug.mturk.photo
     import flash.text.TextFieldAutoSize;
     import flash.text.TextFormat;
     
+    import idv.redbug.mturk.question.YesNoQuestion;
     import idv.redbug.robotbody.util.Toolkits;
     
     import org.osflash.signals.Signal;
@@ -29,9 +30,8 @@ package idv.redbug.mturk.photo
     public class PhotoSprite extends Sprite
     {
         private const MAX_DESCRIPTION   :uint = 150;
-        private const QUESTION_YES      :uint = 1;
-        private const QUESTION_NO       :uint = 0;
-        
+
+        private const SPACE             :uint = 20;
         
         private var _model              :PhotoModel;
         private var _bitmap             :DisplayObject;
@@ -39,7 +39,7 @@ package idv.redbug.mturk.photo
         private var _tags_txt           :TextField;
         private var _description_txt    :TextField;
         private var _reference_txt      :TextField;
-        private var _related_question   :TextField;
+        private var _hint_txt           :TextField;
         
         private var _ct_restaurant_rb   :RadioButton;
         private var _ct_dish_rb         :RadioButton; 
@@ -47,9 +47,8 @@ package idv.redbug.mturk.photo
         private var _ct_none_rb         :RadioButton;
         private var _ct_rb_group        :RadioButtonGroup;
         
-        private var _related_yes_rb     :RadioButton;
-        private var _related_no_rb      :RadioButton;
-        private var _related_rb_group   :RadioButtonGroup;
+        private var _q_is_related       :YesNoQuestion;
+        private var _q_has_any_person   :YesNoQuestion;
         
         private var _box                :Sprite; 
         private var _index              :int;
@@ -105,6 +104,14 @@ package idv.redbug.mturk.photo
             _title_txt.autoSize = TextFieldAutoSize.CENTER
             _title_txt.wordWrap = true;
             
+            //-- Hint text --//
+            _hint_txt = new TextField();
+            _hint_txt.defaultTextFormat = new TextFormat('Arial', 10, 0x000000, true);
+            _hint_txt.text = "Done.";
+            _hint_txt.autoSize = TextFieldAutoSize.LEFT;
+            _hint_txt.wordWrap = true;
+            _hint_txt.visible = false;
+            _hint_txt.width = width;
             
             //--  restaurant photo --//
             _bitmap.x = ( width - _bitmap.width ) >> 1;
@@ -135,28 +142,6 @@ package idv.redbug.mturk.photo
             reference_wraper.addChild(_reference_txt );
             
             
-            _related_question = new TextField();
-            _related_question.defaultTextFormat = new TextFormat( null, 12, color, true );
-            _related_question.text = "Is this photo related to the designated restaurant?"
-            _related_question.width = width;
-            _related_question.autoSize = TextFieldAutoSize.LEFT;
-            _related_question.wordWrap = true;
-            
-            
-            //-- radio buttons - is related --//
-            _related_yes_rb    = new RadioButton();
-            _related_no_rb     = new RadioButton();
-            _related_rb_group  = new RadioButtonGroup("related_group");
-
-            _related_yes_rb.label = "Yes";
-            _related_yes_rb.value = QUESTION_YES;
-            
-            _related_no_rb.label = "No";
-            _related_no_rb.value = QUESTION_NO;
-            
-            _related_yes_rb.group = _related_no_rb.group = _related_rb_group;
-            
-            
             //-- radio buttons - content type --//
             _ct_restaurant_rb = new RadioButton();
             _ct_dish_rb = new RadioButton();
@@ -181,15 +166,29 @@ package idv.redbug.mturk.photo
 
             
             y = _bitmap.y + _bitmap.height;
-            var space   :int = 20;
             
             //-----  Box ------//
             _box = new Sprite();
             _box.x = x;
-            _box.y = y + space;
-            
+            _box.y = y + SPACE;
             
             var contentType:int = _model.contentType; 
+
+
+            /******************************
+             * Question: is_related
+             ******************************/
+            question = "Is there any person in this photo?";
+            _q_has_any_person = new YesNoQuestion( question, YesNoQuestion.QUESTION_NO, _box, addCTRadioButtons, haltHandlerForYesNoQuestion );            
+
+            /******************************
+             * Question: is_related
+             ******************************/
+            var question:String = "Is this photo related to the designated restaurant?"
+            _q_is_related = new YesNoQuestion(question, YesNoQuestion.QUESTION_YES, _box, addCTRadioButtons, haltHandlerForYesNoQuestion);
+            
+            _q_has_any_person.next_question = _q_is_related; 
+            
             
             //-- tags --//
             _tags_txt = new TextField();
@@ -244,80 +243,68 @@ package idv.redbug.mturk.photo
                 }
                 addCTRadioButtons();
             }
-                //normal mode
+            //normal mode
             else{
-                addQuestionRadioButtons();
+                addPreQuestion();
             }
             
             this.addChild( _title_txt );
             this.addChild( _bitmap );
             this.addChild( _box ); 
+            this.addChild( _hint_txt );
             this.addChild( _tags_txt );
             this.addChild( _description_txt );
             this.addChild( reference_wraper );
         }
-
-        private function onAnsweringQuestion( event:Event ):void
+        
+        private function haltHandlerForYesNoQuestion():void
         {
-            if( event.target.selection.value == QUESTION_NO )
-            {
-                _ct_none_rb.selected = true;
-                _model.contentType = PhotoModel.CT_NONE;
-                _sgSelected.dispatch( _index );
-            }else{
-                Toolkits.removeAllChildren( _box );
-                addCTRadioButtons();            
-            }
+            _ct_none_rb.selected = true;
+            _model.contentType = PhotoModel.CT_NONE;
+            _sgSelected.dispatch( _index );
         }
+        
         
         private function addCTRadioButtons( ):void
         {
-            var space   :int = 20;
-            
             _ct_restaurant_rb.move(0, 0); 
-            _ct_dish_rb.move(0, _ct_restaurant_rb.y + space); 
-            _ct_logo_rb.move(0, _ct_dish_rb.y + space); 
-            _ct_none_rb.move(0, _ct_logo_rb.y + space);
+            _ct_dish_rb.move(0, _ct_restaurant_rb.y + SPACE); 
+            _ct_logo_rb.move(0, _ct_dish_rb.y + SPACE); 
+            _ct_none_rb.move(0, _ct_logo_rb.y + SPACE);
             
             _box.addChild( _ct_restaurant_rb );
             _box.addChild( _ct_dish_rb );
             _box.addChild( _ct_logo_rb );
             _box.addChild( _ct_none_rb );
             
+            _hint_txt.x = _box.x;
+            _hint_txt.y = _box.y + (_box.height >> 1);
+            
             _tags_txt.x = _box.x;
-            _tags_txt.y = _box.y + (_box.height >> 1) + space;
+            _tags_txt.y = _hint_txt.y + SPACE;
 
             _description_txt.x = _box.x;
-            _description_txt.y = _tags_txt.y + _tags_txt.height + space;
+            _description_txt.y = _tags_txt.y + _tags_txt.height + SPACE;
             
             _ct_rb_group.addEventListener( MouseEvent.CLICK, onClickRadioButton );
         }
         
-        private function addQuestionRadioButtons():void
+        private function addPreQuestion():void
         {
-            var space   :int = 20;
-            _related_question.y = space;
-            _related_yes_rb.move( 0, _related_question.y + _related_question.height );
-            _related_no_rb.move(0, _related_yes_rb.y + space ); 
-            
-            _box.addChild( _related_question );
-            _box.addChild( _related_yes_rb );
-            _box.addChild( _related_no_rb );
+            _q_has_any_person.process();
             
             _tags_txt.x = _box.x;
-            _tags_txt.y = _box.y + (_box.height >> 1) + space * 2;
-            
+            _tags_txt.y = _box.y + (_box.height >> 1) + SPACE * 2;
             _description_txt.x = _box.x;
-            _description_txt.y = _tags_txt.y + _tags_txt.height + space;
-            
-            _related_rb_group.addEventListener( MouseEvent.CLICK, onAnsweringQuestion );
+            _description_txt.y = _tags_txt.y + _tags_txt.height + SPACE;
         }
-            
         
         private function onClickRadioButton(event:Event):void
         {
             _model.contentType = event.target.selection.value;
             _sgSelected.dispatch( _index );
+            
+            _hint_txt.visible = true;
         }
         
         public function get bitmap():DisplayObject
