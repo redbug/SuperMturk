@@ -49,6 +49,7 @@ package idv.redbug.mturk.photo
         
         private var _q_is_related       :YesNoQuestion;
         private var _q_has_any_person   :YesNoQuestion;
+        private var _q_has_watermark    :YesNoQuestion;
         
         private var _box                :Sprite; 
         private var _index              :int;
@@ -173,21 +174,28 @@ package idv.redbug.mturk.photo
             _box.y = y + SPACE;
             
             var contentType:int = _model.contentType; 
-
-
+            var question:String;
+            
             /******************************
-             * Question: is_related
+             * Question: has_person
              ******************************/
             question = "Is there any person in this photo?";
             _q_has_any_person = new YesNoQuestion( question, YesNoQuestion.QUESTION_NO, _box, addCTRadioButtons, haltHandlerForYesNoQuestion );            
 
             /******************************
+             * Question: has_watermarker
+             ******************************/
+             question = "Is there any watermark on this photo?";
+             _q_has_watermark = new YesNoQuestion( question, YesNoQuestion.QUESTION_NO, _box, addCTRadioButtons, haltHandlerForYesNoQuestion );
+            
+            /******************************
              * Question: is_related
              ******************************/
-            var question:String = "Is this photo related to the designated restaurant?"
+            question = "Is this photo related to the designated restaurant?"
             _q_is_related = new YesNoQuestion(question, YesNoQuestion.QUESTION_YES, _box, addCTRadioButtons, haltHandlerForYesNoQuestion);
-            
-            _q_has_any_person.next_question = _q_is_related; 
+
+            _q_has_any_person.next_question = _q_has_watermark;
+            _q_has_watermark.next_question = _q_is_related;
             
             
             //-- tags --//
